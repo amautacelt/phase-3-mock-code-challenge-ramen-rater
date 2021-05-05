@@ -1,0 +1,274 @@
+// ***********G.v***********
+
+getAllRamen()
+
+// ****GRAB DOM ELEMENTS****
+
+const ramenMenu = document.querySelector("#ramen-menu")
+const ramenDetail = document.querySelector("#ramen-detail")
+const ramenRating = document.querySelector("#ramen-rating")
+
+// tight feedback loops
+// console.log(ramenMenu);
+// check that const ramenMenu exists/grabbing item correctly
+// check that js is connected to html
+// check that js executes after the html loads
+// ramenMenu is a container as a whole
+
+
+// ****EVENTS HANDLING****
+// event delegation
+// event/event listener: when each image was created, could have added event to it; each image could have had an event listener tag to it
+// event listener: had to be done at time of creation
+// event delegation: to put an event listener on container as a whole and listen for clicks inside that container
+// ramenMenu is a container as a whole
+
+ramenMenu.addEventListener("click", handleClick)
+ramenRating.addEventListener("submit", collectFormData)
+
+
+function handleClick(e){
+    if (e.target.className === "detail-image" ){
+        const ramenId = e.target.dataset.id
+        getSingleRamen(ramenId)
+    }
+}
+
+// have to click image to send a network(?) request
+
+
+// ****FETCH/NETWORK REQUESTS****
+
+function getAllRamen(){
+    fetch("http://localhost:3000/ramens")
+    // .then(console.log)
+    .then(res => res.json())
+    // .then(console.log)
+    .then(addRamenToMenu)
+}
+
+function getSingleRamen(id){
+    fetch(`http://localhost:3000/ramens/${id}`)
+    .then(res => res.json())
+    // .then(console.log)
+    .then(addRamenToShowSection)
+}
+
+
+function updateRamen(id, obj){
+    fetch(`http://localhost:3000/ramens/${id}`, {
+        method: "PATCH",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(obj)
+    })
+        // .then(res => res.json())
+        // .then(addRamenToShowSection)
+}
+
+// res = entire response object from server (headers, body, status code)
+// res.json() = json method goes into response's body, grabs data in shape of json, and turns it into js
+
+// e.target
+// e.target.id
+// e.target.dataset
+// e.target.dataset.id
+
+// ****LOGIC/MANIPULATING THE DOM****
+
+function addRamenToMenu(ramenArray){
+    ramenArray.forEach(ramen => {
+        ramenMenu.innerHTML += `
+            <img src=${ramen.image} class="detail-image" data-id=${ramen.id} />
+        `
+    })
+    // debugger
+}
+
+// data-id: creates an object/a hash that has different keys (adding keys - dataset in js)
+// data- keyword
+// ramenMenu
+// ramenMenu.children[0]
+// ramenMenu.children[0].dataset
+// dataset.name
+
+// HTML id = for CSS and to target that element via JS
+// data id/ data- (dataset) = storing information for JS to use
+
+function addRamenToShowSection(singleRamen){
+    ramenDetail.innerHTML = `
+        <img class="detail-image" src=${singleRamen.image} alt=${singleRamen.name} />
+        <h2 class="name">${singleRamen.name}</h2>
+        <h3 class="restaurant">${singleRamen.restaurant}</h3>
+    `
+    // HTML Rating Form (line 29): target name="rating" id="rating" value=""
+    ramenRating.dataset.id = singleRamen.id
+    ramenRating.rating.value = singleRamen.rating
+    ramenRating.comment.value = singleRamen.comment
+}
+
+
+function collectFormData(e){
+    e.preventDefault()
+    console.log(e.target);
+
+    const ramenId = e.target.dataset.id
+    // debugger
+    const rating = e.target.rating.value
+    const comment = e.target.comment.value
+
+    const ramenObj = {rating: rating, comment: comment}
+
+    updateRamen(ramenId, ramenObj)
+
+}
+
+
+
+
+// ***********G.gh***********
+
+// write your code here
+getAllRamen()
+
+//  **************** Grab DOM Elements *************
+const ramenMenu = document.querySelector("#ramen-menu")
+const ramenDetail = document.querySelector("#ramen-detail")
+const ramenRating = document.querySelector("#ramen-rating")
+
+// Bonus creation 
+const newRamenForm = document.querySelector("#new-ramen")
+
+
+
+// *************** Events Handaling ******************
+
+ramenMenu.addEventListener("click", handleClick)
+ramenRating.addEventListener("submit", collectFormData)
+
+// Bonus creation
+newRamenForm.addEventListener("submit", collectNewRamenData)
+// Bonus delete
+ramenDetail.addEventListener('click', handleDeleteClick)
+
+function handleClick(e){
+ if (e.target.className === "detail-image"){
+   const ramenId = e.target.dataset.id
+   getSingleRamen(ramenId)
+ }
+}
+
+function handleDeleteClick(e){
+ if (e.target.className === "delete-btn"){
+   const ramenId = e.target.dataset.id
+   deleteRamen(ramenId).then(getAllRamen)
+   
+ }
+}
+
+
+// ***************** Fetch/Network Requests ************
+function getAllRamen() {
+ fetch("http://localhost:3000/ramens")
+ .then(res => res.json())
+ .then(ramenArray => {
+   addRamenToMenu(ramenArray)
+   
+   // BONUS-See the details for the first ramen on page load (without clicking on an image)
+   addRamenShowSection(ramenArray[0])
+ })
+}
+
+
+function getSingleRamen(id){
+ fetch(`http://localhost:3000/ramens/${id}`)
+ .then(res => res.json())
+ .then(addRamenShowSection)
+}
+
+function updateRamen(id, obj){
+ fetch(`http://localhost:3000/ramens/${id}`, {
+   method: "PATCH",
+   headers: {"Content-Type": "application/json"},
+   body: JSON.stringify(obj)
+ })
+ // .then(res => res.json())
+ // .then(addRamenShowSection)
+}
+
+// Bonus creation
+function createNewRamen(ramen){
+ fetch(`http://localhost:3000/ramens`, {
+   method: "POST",
+   headers: {"Content-Type": "application/json"},
+   body: JSON.stringify(ramen)
+ })
+ .then(res => res.json())
+ .then(addSingleRamenToMenu)
+ 
+}
+
+function deleteRamen(id){
+ return fetch(`http://localhost:3000/ramens/${id}`, {
+   method: "DELETE"
+ })
+}
+
+// ***************** Logic/Manipulating the DOM ***************
+function addRamenToMenu(ramenArray){
+ ramenMenu.innerHTML = ""
+
+ ramenArray.forEach(ramen => {
+   addSingleRamenToMenu(ramen)
+ })
+}
+
+
+function addSingleRamenToMenu(ramen){
+ ramenMenu.innerHTML += `
+ <img src=${ramen.image} class="detail-image" data-id=${ramen.id} />
+ `
+}
+
+
+function addRamenShowSection(singleRamen) {
+ ramenDetail.innerHTML = `
+ <img class="detail-image" src=${singleRamen.image} alt=${singleRamen.name} />
+ <h2 class="name">${singleRamen.name}</h2>
+ <h3 class="restaurant">${singleRamen.restaurant}</h3>
+ <button class="delete-btn" data-id=${singleRamen.id}>X</button>
+ `
+ 
+ ramenRating.dataset.id = singleRamen.id
+ ramenRating.rating.value = singleRamen.rating
+ ramenRating.comment.value = singleRamen.comment
+}
+
+
+function collectFormData(e){
+ e.preventDefault()
+ 
+ const ramenId = e.target.dataset.id
+ const rating = e.target.rating.value
+ const comment = e.target.comment.value
+ 
+ const ramenObj = {rating: rating, comment: comment}
+ 
+ 
+ updateRamen(ramenId, ramenObj)
+}
+
+// Bonus creation
+function collectNewRamenData(e) {
+ e.preventDefault()
+ 
+ const name = e.target.name.value
+ const image = e.target.image.value
+ const comment = e.target["new-comment"].value
+ const rating = e.target.rating.value
+ const restaurant = e.target.restaurant.value
+
+ const ramentObj = {name, image, comment, rating, restaurant}
+
+ createNewRamen(ramentObj)
+ e.target.reset()
+}

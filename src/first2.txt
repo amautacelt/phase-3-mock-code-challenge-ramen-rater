@@ -1,0 +1,141 @@
+// write your code here
+
+// ***********M.v***********
+
+// Deliverable #1
+
+// fetch('http://localhost:3000/ramens')
+//     .then(response => response.json())
+//     // .then(ramenArr => console.log(ramenArr))
+//     .then(ramenArr => {
+//         ramenArr.forEach(ramenObject => {
+//             const img = document.createElement('img')
+//             img.src = ramenObject.image
+
+//             // console.log(img)
+
+//             const ramenMenu = document.querySelector('div#ramen-menu')
+//             ramenMenu.append(img)
+//         })
+//     })
+
+
+
+const ramenMenu = document.querySelector('div#ramen-menu')
+
+
+// fetch('http://localhost:3000/ramens')
+//     .then(response => response.json())
+//     .then(ramenArr => {
+//         // ramenArr.forEach(ramenObject => {
+//         //     renderOneMenuImage(ramenObject)
+//         // })
+//         ramenArr.forEach(renderOneMenuImage)
+//         // (renderOneMenuImage takes 1 arg (ramenObject) and forEach is supplying 1 arg (ramenObject))
+//     })
+
+function renderRamenMenu(){
+    fetch('http://localhost:3000/ramens')
+    .then(response => response.json())
+    .then(ramenArr => {
+        // ramenArr.forEach(ramenObject => {
+        //     renderOneMenuImage(ramenObject)
+        // })
+        ramenArr.forEach(renderOneMenuImage)
+        // (renderOneMenuImage takes 1 arg (ramenObject) and forEach is supplying 1 arg (ramenObject))
+    })
+}
+
+function renderOneMenuImage(ramenObject){
+    const img = document.createElement('img')
+    img.src = ramenObject.image
+    img.dataset.id = ramenObject.id
+    // const ramenMenu = document.querySelector('div#ramen-menu')
+    ramenMenu.append(img)
+}
+
+
+function detailOneRamen(ramenObj){
+    const detailImg = document.querySelector('img.detail-image')
+    detailImg.src = ramenObj.image
+    detailImg.alt = ramenObj.name
+
+    const detailH2 = document.querySelector('h2.name')
+    detailH2.textContent = ramenObj.name
+
+    const detailH3 = document.querySelector('h3.restaurant')
+    detailH3.textContent = ramenObj.restaurant
+
+    const ratingInput = document.querySelector('input#rating')
+    ratingInput.value = ramenObj.rating
+
+    const commentInput = document.querySelector('textarea#comment')
+    commentInput.value = ramenObj.comment
+
+
+    detailedRamenUpdateForm.dataset.id = ramenObj.id
+}
+
+
+// *******DELIVERABLE #2********
+
+ramenMenu.addEventListener('click', event => {
+    // console.log(event.target)
+
+    if (event.target.matches('img')){
+        // console.log(event.target)
+
+        fetch(`http://localhost:3000/ramens/${event.target.dataset.id}`)
+            .then(response => response.json())
+            .then(detailOneRamen)
+                // console.log(ramenObj)
+
+                // const detailImg = document.querySelector('img.detail-image')
+                // detailImg.src = ramenObj.image
+                // detailImg.alt = ramenObj.name
+
+                // const detailH2 = document.querySelector('h2.name')
+                // detailH2.textContent = ramenObj.name
+
+                // const detailH3 = document.querySelector('h3.restaurant')
+                // detailH3.textContent = ramenObj.restaurant
+
+                // const ratingInput = document.querySelector('input#rating')
+                // ratingInput.value = ramenObj.rating
+
+                // const commentInput = document.querySelector('textarea#comment')
+                // commentInput.value = ramenObj.comment
+    }
+
+})
+
+
+// *******DELIVERABLE #3********
+
+const detailedRamenUpdateForm = document.querySelector('form#ramen-rating')
+
+detailedRamenUpdateForm.addEventListener('submit', event => {
+    event.preventDefault()
+    // console.log(event.target)
+
+    const rating = event.target.rating.value
+    const comment = event.target.comment.value
+
+    fetch(`http://localhost:3000/ramens/${event.target.dataset.id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ rating: rating, comment: comment })
+    })
+        // .then(response => response.json())
+        // .then(updatedRamenObj => {
+        //     console.log(updatedRamenObj)
+        // })
+
+
+})
+
+
+renderRamenMenu()
